@@ -1,3 +1,25 @@
+# Nova AI Assistant
+
+An AI assistant project designed to answer questions using document retrieval and locally processed language models.
+
+## Architecture
+
+![Nova AI Assistant Architecture](assets/nova-architecture.png)
+
+## Key Components
+
+* **User Interface:** Accepts user questions.
+* **Main Application:** Coordinates the assistant workflow.
+* **RAG Pipeline:** Retrieves relevant information to ground answers.
+* **Document Loader:** Processes source documents.
+* **Embeddings and FAISS:** Supports semantic similarity search.
+* **Local LLM:** Generates responses locally when configured.
+
+## Technologies
+
+Python · RAG · Embeddings · FAISS · Git · GitHub
+
+
 # NOVA AI Assistant 🤖
 
 **A local-first AI assistant that answers questions from your documents using Retrieval-Augmented Generation (RAG).**
