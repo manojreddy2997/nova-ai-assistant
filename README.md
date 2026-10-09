@@ -1,100 +1,48 @@
-# Nova AI Assistant
+﻿# NOVA AI Assistant
 
-An AI assistant project designed to answer questions using document retrieval and locally processed language models.
+**A local-first, RAG-powered document question-answering assistant.**
+
+NOVA helps users ask questions about PDF documents and retrieve relevant information using semantic search and a locally running language model. The goal is to keep document processing and language-model inference on the user's machine.
 
 ## Architecture
 
-![Nova AI Assistant Architecture](assets/nova-architecture.png)
+![NOVA AI Assistant Architecture](assets/nova-architecture.png)
 
-## Key Components
+### How It Works
 
-* **User Interface:** Accepts user questions.
-* **Main Application:** Coordinates the assistant workflow.
-* **RAG Pipeline:** Retrieves relevant information to ground answers.
-* **Document Loader:** Processes source documents.
-* **Embeddings and FAISS:** Supports semantic similarity search.
-* **Local LLM:** Generates responses locally when configured.
+1. **Document ingestion:** Extract text from PDF documents.
+2. **Text chunking:** Split document text into smaller segments and retain relevant metadata.
+3. **Embedding generation:** Convert text into vector representations using Sentence Transformers.
+4. **Vector storage:** Store embeddings and searchable document information in ChromaDB.
+5. **Semantic retrieval:** Find document chunks relevant to the user's question.
+6. **Answer generation:** Pass retrieved context to a local Ollama model.
+7. **Grounded response:** Return an answer based on retrieved context, with source information where available.
 
-## Technologies
+## Features
 
-Python · RAG · Embeddings · FAISS · Git · GitHub
+- PDF document processing
+- Text chunking and metadata handling
+- Semantic search using embeddings
+- Vector storage and retrieval with ChromaDB
+- Local language-model integration through Ollama
+- Source-aware question answering
+- Streamlit chat interface
+- Automated tests with Pytest
 
+## Technology Stack
 
-# NOVA AI Assistant 🤖
+| Technology | Purpose |
+|---|---|
+| Python | Application logic |
+| Streamlit | User interface |
+| Sentence Transformers | Text embeddings |
+| ChromaDB | Vector storage and retrieval |
+| Ollama | Local language-model inference |
+| PyPDF | PDF text extraction |
+| Pytest | Automated testing |
+| Git and GitHub | Version control and project hosting |
 
-**A local-first AI assistant that answers questions from your documents using Retrieval-Augmented Generation (RAG).**
-
-NOVA helps users upload and index knowledge documents, retrieve relevant information, and generate answers grounded in the retrieved context.
-
-## ✨ Features
-
-* **Document processing:** Extract text from PDF documents, page by page.
-* **Smart chunking:** Split documents into smaller, searchable text segments.
-* **Semantic search:** Use sentence embeddings to find relevant content by meaning.
-* **Vector database:** Store and search document embeddings using ChromaDB.
-* **Local LLM integration:** Generate answers using Ollama and a locally running language model.
-* **Source-aware answers:** Include document and page information in retrieved context.
-* **Interactive chat interface:** Ask questions through a Streamlit application.
-* **Automated tests:** Test important components of the application.
-
-## 🏗️ Architecture
-
-```text
-                 User Question
-                       |
-                       v
-              Streamlit Chat UI
-                       |
-                       v
-                RAG Application
-                       |
-                       v
-              Semantic Retrieval
-                       |
-                       v
-                 ChromaDB
-                       |
-                       v
-            Relevant Document Chunks
-                       |
-                       v
-             Local Ollama LLM
-                       |
-                       v
-              Grounded Answer
-```
-
-### Document indexing workflow
-
-```text
-PDF Documents
-      |
-      v
-Text Extraction
-      |
-      v
-Text Chunking + Metadata
-      |
-      v
-Embedding Model
-      |
-      v
-ChromaDB Vector Store
-```
-
-## 🧰 Technology Stack
-
-| Technology            | Purpose                      |
-| --------------------- | ---------------------------- |
-| Python                | Core application             |
-| Streamlit             | Chat interface               |
-| Sentence Transformers | Text embeddings              |
-| ChromaDB              | Vector storage and retrieval |
-| Ollama                | Local LLM inference          |
-| PyPDF                 | PDF text extraction          |
-| Pytest                | Automated testing            |
-
-## 📁 Project Structure
+## Project Structure
 
 ```text
 nova-ai-assistant/
@@ -106,13 +54,12 @@ nova-ai-assistant/
 │   │   └── vector_store.py
 │   └── frontend/
 │       └── chat_ui.py
+├── assets/
+│   └── nova-architecture.png
 ├── data/
 │   ├── documents/
 │   └── chroma_db/
 ├── tests/
-│   ├── test_document_processor.py
-│   ├── test_vector_store.py
-│   └── test_llm.py
 ├── reindex_documents.py
 ├── requirements.txt
 ├── pytest.ini
@@ -120,14 +67,14 @@ nova-ai-assistant/
 └── README.md
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-* Python 3.11 recommended
-* Git
-* Ollama installed and running locally
-* A compatible Ollama model, such as `llama3.2:3b`
+- Python 3.11 recommended
+- Git
+- Ollama installed locally
+- An Ollama model compatible with your application
 
 ### 1. Clone the repository
 
@@ -138,14 +85,14 @@ cd nova-ai-assistant
 
 ### 2. Create a virtual environment
 
-**Windows PowerShell:**
+Windows PowerShell:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-**macOS or Linux:**
+macOS or Linux:
 
 ```bash
 python3 -m venv .venv
@@ -158,17 +105,17 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-### 4. Download the local language model
+### 4. Set up Ollama
 
-After installing Ollama, run:
+Install Ollama for your operating system, then download a supported model:
 
 ```bash
 ollama pull llama3.2:3b
 ```
 
-Make sure the Ollama service is running before using the chat application.
+Ensure the Ollama service is running and that the model name matches your application configuration.
 
-### 5. Add your documents
+### 5. Add PDF documents
 
 Place the PDF files you want to search in:
 
@@ -176,62 +123,58 @@ Place the PDF files you want to search in:
 data/documents/
 ```
 
-### 6. Index the documents
+### 6. Index your documents
 
 ```bash
 python reindex_documents.py
 ```
 
-### 7. Start NOVA
+### 7. Launch NOVA
 
 ```bash
 streamlit run app/frontend/chat_ui.py
 ```
 
-Open the local URL printed in your terminal.
+Open the local address shown in the terminal.
 
-## 🧪 Run Tests
+## Run Tests
+
+Run the project's automated tests with:
 
 ```bash
 python -m pytest -v
 ```
 
-## 🔐 Privacy
+## Privacy and Limitations
 
-NOVA is designed for local document processing and local LLM inference. When configured to use a local Ollama service and local embedding model, document content can remain on your computer.
+- The project is designed for local document processing and local LLM inference.
+- Keep documents and generated database files out of version control when they contain private information.
+- Answer quality depends on document quality, retrieval accuracy, and the selected model.
+- Scanned PDFs may require OCR.
+- Local model performance depends on available memory and hardware.
+- Verify answers against their source documents, especially for important decisions.
 
-Actual privacy depends on the models, dependencies, and services you configure. Avoid committing confidential documents, credentials, virtual environments, or local vector database files to GitHub.
+## Future Improvements
 
-## ⚠️ Current Limitations
+- Hybrid search and reranking
+- Retrieval-quality evaluation
+- Improved source citations
+- Conversation history and document management
+- Authentication and access control
+- Response latency and resource monitoring
 
-* Answer quality depends on document quality, retrieval results, and the selected language model.
-* Scanned PDFs may require OCR before their text can be searched.
-* Local inference performance depends on available hardware and model size.
-* A cloud-hosted interface cannot automatically access Ollama running on your personal computer.
+## Skills Demonstrated
 
-## 🛣️ Future Improvements
+- Retrieval-Augmented Generation (RAG)
+- Document ingestion and text chunking
+- Embeddings and semantic retrieval
+- Vector databases
+- Local LLM integration
+- Python application development
+- Automated testing
+- Git and GitHub workflows
 
-* Add support for more document formats.
-* Improve retrieval evaluation and source citations.
-* Add conversation history and document management.
-* Introduce hybrid search and reranking.
-* Add authentication and access controls.
-* Add performance and retrieval-quality evaluations.
-
-## 🎯 Learning Outcomes
-
-This project demonstrates practical experience with:
-
-* Retrieval-Augmented Generation (RAG)
-* Text extraction and chunking
-* Embeddings and semantic search
-* Vector databases
-* Local language model integration
-* Python application structure
-* Automated testing
-* Git and GitHub project documentation
-
-## 👨‍💻 Author
+## Author
 
 **Manoj Reddy**
 
@@ -239,4 +182,4 @@ GitHub: [@manojreddy2997](https://github.com/manojreddy2997)
 
 ---
 
-*Built as a hands-on Generative AI portfolio project.*
+*An ongoing Generative AI portfolio project.*
