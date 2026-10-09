@@ -32,3 +32,15 @@ data/documents/*.pdf
 Thumbs.db
 .vscode/
 .idea/
+# Local databases and generated artifacts
+*.sqlite
+*.sqlite3
+*.db
+
+# Python environments and local configuration
+.python-version
+.envrc
+
+# IDE and operating-system temporary files
+*.swp
+*.swo
