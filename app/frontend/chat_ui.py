@@ -348,18 +348,20 @@ if user_message:
         try:
             with st.spinner("NOVA is thinking..."):
                 # Retrieve sources for the interface.
-                sources = retrieve_sources(
-                    user_message,
-                    top_k=3,
-                )
+                sources = retrieve_sources(user_message, top_k=3)
 
-                # Generate a grounded response with local Ollama.
+
+                # Generate a grounded response using the same retrieved sources.
                 response = st.write_stream(
-                    generate_response(st.session_state.messages)
+                    generate_response(
+                        st.session_state.messages,
+                        retrieved_chunks=sources,
+                    )
                 )
 
                 if not isinstance(response, str):
                     response = str(response)
+
 
             if sources:
                 display_sources(sources)

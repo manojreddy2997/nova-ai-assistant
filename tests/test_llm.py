@@ -118,3 +118,42 @@ def test_document_page_is_included_in_context(
     assert "[Source 1: data_engineering.pdf, Page 7, Chunk 2]" in system_prompt
     assert "ETL means Extract, Transform, Load." in system_prompt
     
+@patch("app.backend.llm.ollama.chat")
+@patch("app.backend.llm.retrieve_sources")
+def test_supplied_chunks_are_reused_without_retrieval(
+    mock_retrieve,
+    mock_chat,
+):
+    supplied_chunks = [
+        {
+            "text": "ETL stands for Extract, Transform, and Load.",
+            "metadata": {
+                "source": "etl_guide.pdf",
+                "page_number": 3,
+                "chunk_index": 1,
+            },
+            "distance": 0.2,
+        }
+    ]
+
+    mock_chat.return_value = iter([
+        {
+            "message": {
+                "content": "ETL stands for Extract, Transform, and Load."
+            }
+        }
+    ])
+
+    response = "".join(
+        generate_response(
+            [{"role": "user", "content": "What does ETL stand for?"}],
+            retrieved_chunks=supplied_chunks,
+        )
+    )
+
+    assert "ETL stands for Extract, Transform, and Load." in response
+    mock_retrieve.assert_not_called()
+    mock_chat.assert_called_once()
+
+    system_prompt = mock_chat.call_args.kwargs["messages"][0]["content"]
+    assert "[Source 1: etl_guide.pdf, Page 3, Chunk 1]" in system_prompt

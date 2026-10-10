@@ -3,20 +3,26 @@ import ollama
 
 from app.backend.vector_store import search_chunks
 
+
 MODEL_NAME = "llama3.2:3b"
 
 
 def retrieve_sources(question: str, top_k: int = 3) -> list[dict]:
-    """Retrieve relevant document chunks only."""
+    """Retrieve relevant document chunks for a question."""
     return search_chunks(question, top_k=top_k)
 
 
-def generate_response(messages: list[dict[str, str]]):
+def generate_response(
+    messages: list[dict[str, str]],
+    retrieved_chunks: list[dict] | None = None,
+):
     """
-    Generate a response with local Ollama.
+    Generate a response using the local Ollama model.
 
-    When relevant document chunks are found, answer using their context.
-    When no relevant chunks are found, do not invent document citations.
+    If retrieved_chunks are supplied, reuse them instead of performing
+    another retrieval. Otherwise, retrieve relevant chunks automatically.
+
+    Document-based claims should be grounded in the retrieved context.
     """
     latest_question = next(
         (
@@ -31,7 +37,9 @@ def generate_response(messages: list[dict[str, str]]):
         yield "Please enter a question."
         return
 
-    retrieved_chunks = retrieve_sources(latest_question, top_k=3)
+    # Reuse chunks provided by the UI; retrieve only when none were supplied.
+    if retrieved_chunks is None:
+        retrieved_chunks = retrieve_sources(latest_question, top_k=3)
 
     if retrieved_chunks:
         context_parts = []
