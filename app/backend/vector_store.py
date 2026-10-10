@@ -1,8 +1,15 @@
 
+import re
+
 import chromadb
+
 from app.backend.embeddings import generate_embeddings
 
-# Local persistent vector database
+
+# --------------------------------------------------
+# ChromaDB configuration
+# --------------------------------------------------
+
 DB_PATH = "data/chroma_db"
 COLLECTION_NAME = "nova_documents"
 
@@ -14,69 +21,92 @@ _collection = _client.get_or_create_collection(
 )
 
 
+# --------------------------------------------------
+# Add document chunks
+# --------------------------------------------------
+
 def add_chunks(chunks: list, source: str = "sample.pdf") -> int:
     """
-    Store document chunks and their metadata in ChromaDB.
+    Add document chunks to ChromaDB.
 
-    Supports both plain text chunks and dictionaries containing:
-    text, page_number, and chunk_index.
+    Supports plain text chunks and dictionaries containing:
+    - text
+    - chunk_index
+    - page_number
+
+    Existing chunks for the same source are replaced.
+    Returns the number of chunks indexed.
     """
-    # Remove old chunks belonging to this document.
-    _collection.delete(where={"source": source})
-
     if not chunks:
         return 0
 
-    normalized_chunks = []
-
-    for index, chunk in enumerate(chunks):
-        if isinstance(chunk, str):
-            normalized_chunks.append({
-                "text": chunk,
-                "chunk_index": index,
-                "page_number": None,
-            })
-        else:
-            normalized_chunks.append({
-                "text": chunk["text"],
-                "chunk_index": chunk.get("chunk_index", index),
-                "page_number": chunk.get("page_number"),
-            })
-
-    texts = [chunk["text"] for chunk in normalized_chunks]
-
-    # Convert text into embeddings using the local embedding model.
-    embeddings = generate_embeddings(texts)
-
-    # Generate unique IDs for each chunk.
-    ids = [
-        f"{source}_chunk_{index}"
-        for index in range(len(normalized_chunks))
-    ]
-
+    # Extract text and metadata from each chunk.
+    texts = []
     metadatas = []
 
-    for chunk in normalized_chunks:
-        metadata = {
-            "source": source,
-            "chunk_index": chunk["chunk_index"],
-        }
+    for index, chunk in enumerate(chunks):
+        if isinstance(chunk, dict):
+            text = chunk.get("text", "")
 
-        if chunk["page_number"] is not None:
-            metadata["page_number"] = chunk["page_number"]
+            if not isinstance(text, str) or not text.strip():
+                continue
 
+            metadata = {
+                "source": source,
+                "chunk_index": chunk.get("chunk_index", index),
+            }
+
+            page_number = chunk.get("page_number")
+
+            if page_number is not None:
+                metadata["page_number"] = page_number
+
+        else:
+            text = str(chunk)
+
+            if not text.strip():
+                continue
+
+            metadata = {
+                "source": source,
+                "chunk_index": index,
+            }
+
+        texts.append(text)
         metadatas.append(metadata)
 
-    # Store chunks, embeddings, and metadata.
+    if not texts:
+        return 0
+
+    # Generate embeddings for all valid chunks.
+    embeddings = generate_embeddings(texts)
+
+    if hasattr(embeddings, "tolist"):
+        embeddings = embeddings.tolist()
+
+    # Replace previously indexed chunks for this source.
+    _collection.delete(where={"source": source})
+
+    # Keep IDs stable for each source and chunk position.
+    ids = [
+        f"{source}_chunk_{metadata['chunk_index']}"
+        for metadata in metadatas
+    ]
+
+    # Store text, metadata, and embeddings.
     _collection.upsert(
         ids=ids,
         documents=texts,
-        embeddings=embeddings,
         metadatas=metadatas,
+        embeddings=embeddings,
     )
 
-    return len(normalized_chunks)
+    return len(texts)
 
+
+# --------------------------------------------------
+# Search document chunks
+# --------------------------------------------------
 
 def search_chunks(
     query: str,
@@ -86,6 +116,7 @@ def search_chunks(
     """
     Retrieve relevant document chunks using semantic similarity.
 
+    Common AI acronyms are expanded before embedding the query.
     Smaller cosine distances indicate closer matches.
     Results exceeding max_distance are excluded.
     """
@@ -95,20 +126,41 @@ def search_chunks(
     if top_k <= 0:
         return []
 
-    if _collection.count() == 0:
+    collection_count = _collection.count()
+
+    if collection_count == 0:
         return []
 
-    # Convert the user's question into an embedding.
-    query_embedding = generate_embeddings([query])[0]
+    # Expand common AI acronyms to improve semantic matching.
+    acronym_expansions = {
+        "RAG": "Retrieval-Augmented Generation",
+        "LLM": "Large Language Model",
+        "ML": "Machine Learning",
+        "AI": "Artificial Intelligence",
+        }
 
-    # Retrieve the closest chunks from ChromaDB.
+    expanded_query = query
+
+    for acronym, expansion in acronym_expansions.items():
+        expanded_query = re.sub(
+            rf"\b{acronym}\b",
+            expansion,
+            expanded_query,
+            flags=re.IGNORECASE,
+        )
+
+    # Generate the query embedding.
+    query_embedding = generate_embeddings([expanded_query])[0]
+
+    if hasattr(query_embedding, "tolist"):
+        query_embedding = query_embedding.tolist()
+
+    # Retrieve the closest chunks.
     results = _collection.query(
         query_embeddings=[query_embedding],
-        n_results=min(top_k, _collection.count()),
+        n_results=min(top_k, collection_count),
         include=["documents", "metadatas", "distances"],
     )
-
-    matches = []
 
     documents = results.get("documents") or []
     metadatas = results.get("metadatas") or []
@@ -117,23 +169,35 @@ def search_chunks(
     if not documents or not documents[0]:
         return []
 
+    matches = []
+
     for index, document in enumerate(documents[0]):
         distance = distances[0][index]
 
-        # Filter out weak semantic matches.
+        # Preserve the relevance threshold.
         if distance > max_distance:
             continue
 
-        metadata = metadatas[0][index] or {}
+        metadata = (
+            metadatas[0][index]
+            if metadatas and metadatas[0]
+            else {}
+        ) or {}
 
-        matches.append({
-            "text": document,
-            "metadata": metadata,
-            "distance": distance,
-        })
+        matches.append(
+            {
+                "text": document,
+                "metadata": metadata,
+                "distance": distance,
+            }
+        )
 
     return matches
 
+
+# --------------------------------------------------
+# Collection utilities
+# --------------------------------------------------
 
 def get_collection_count() -> int:
     """Return the total number of indexed chunks."""
