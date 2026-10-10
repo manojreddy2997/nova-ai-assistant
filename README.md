@@ -1,6 +1,10 @@
-﻿# NOVA AI Assistant
+# NOVA AI Assistant
 
 **A local-first, RAG-powered document question-answering assistant.**
+
+[![Tests](https://github.com/manojreddy2997/nova-ai-assistant/actions/workflows/tests.yml/badge.svg)](https://github.com/manojreddy2997/nova-ai-assistant/actions/workflows/tests.yml)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Built with Streamlit](https://img.shields.io/badge/UI-Streamlit-ff4b4b.svg)](https://streamlit.io/)
 
 NOVA helps users ask questions about PDF documents and retrieve relevant information using semantic search and a locally running language model. The goal is to keep document processing and language-model inference on the user's machine.
 
@@ -27,7 +31,7 @@ NOVA helps users ask questions about PDF documents and retrieve relevant informa
 - Local language-model integration through Ollama
 - Source-aware question answering
 - Streamlit chat interface
-- Automated tests with Pytest
+- Automated tests with Pytest and GitHub Actions
 
 ## Technology Stack
 
@@ -40,12 +44,15 @@ NOVA helps users ask questions about PDF documents and retrieve relevant informa
 | Ollama | Local language-model inference |
 | PyPDF | PDF text extraction |
 | Pytest | Automated testing |
-| Git and GitHub | Version control and project hosting |
+| Git and GitHub Actions | Version control and continuous integration |
 
 ## Project Structure
 
 ```text
 nova-ai-assistant/
+├── .github/
+│   └── workflows/
+│       └── tests.yml
 ├── app/
 │   ├── backend/
 │   │   ├── document_processor.py
@@ -89,7 +96,7 @@ Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\\.venv\\Scripts\\Activate.ps1
 ```
 
 macOS or Linux:
@@ -107,7 +114,7 @@ python -m pip install -r requirements.txt
 
 ### 4. Set up Ollama
 
-Install Ollama for your operating system, then download a supported model:
+Install Ollama for your operating system, then download the configured model:
 
 ```bash
 ollama pull llama3.2:3b
@@ -139,11 +146,13 @@ Open the local address shown in the terminal.
 
 ## Run Tests
 
-Run the project's automated tests with:
+Run the automated test suite from the project root:
 
 ```bash
-python -m pytest -v
+python -m pytest
 ```
+
+Tests also run automatically on pushes to `main` and pull requests targeting `main` through GitHub Actions.
 
 ## Privacy and Limitations
 
@@ -171,7 +180,7 @@ python -m pytest -v
 - Vector databases
 - Local LLM integration
 - Python application development
-- Automated testing
+- Automated testing and CI
 - Git and GitHub workflows
 
 ## Author
@@ -179,7 +188,3 @@ python -m pytest -v
 **Manoj Reddy**
 
 GitHub: [@manojreddy2997](https://github.com/manojreddy2997)
-
----
-
-*An ongoing Generative AI portfolio project.*
