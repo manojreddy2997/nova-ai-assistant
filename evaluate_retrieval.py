@@ -1,4 +1,4 @@
-
+import sys
 from app.backend.vector_store import (
     search_chunks,
     get_collection_count,
@@ -116,7 +116,19 @@ def evaluate_retrieval():
             f"({rejection_rate:.1f}%)"
         )
 
+        total_failures = (
+        (positive_cases - recall_hits)
+        + (positive_cases - top1_hits)
+        + (negative_cases - negative_hits)
+    )
+
     print("\nEvaluation complete.")
+
+    if total_failures:
+        print(f"FAILED: {total_failures} evaluation check(s) failed.")
+        sys.exit(1)
+
+    print("SUCCESS: All evaluation checks passed.")
 
 
 if __name__ == "__main__":
