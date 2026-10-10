@@ -1,4 +1,4 @@
-# NOVA AI Assistant
+﻿# NOVA AI Assistant
 
 **A local-first, RAG-powered document question-answering assistant.**
 
@@ -10,7 +10,18 @@ NOVA helps users ask questions about PDF documents and retrieve relevant informa
 
 ## Architecture
 
+## Application Preview
+
+Here is a preview of the NOVA AI Assistant interface.
+
+### How It Works
+
 ![NOVA AI Assistant Architecture](assets/nova-architecture.png)
+## Application Preview
+
+Here is a preview of the NOVA AI Assistant interface.
+
+![NOVA AI Assistant Chat Interface](assets/nova-chat-interface.png)
 
 ### How It Works
 
